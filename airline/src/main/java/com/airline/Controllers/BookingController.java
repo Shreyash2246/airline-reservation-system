@@ -16,6 +16,7 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
+    /* 
     @PostMapping("/create")
     public ResponseEntity<?> createBooking(@RequestBody BookingRequestDTO request) {
         try {
@@ -26,5 +27,14 @@ public class BookingController {
             // Catches our RuntimeExceptions (like "Not enough seats") and sends a Bad Request
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+    */
+   
+    @PostMapping("/create")
+    public ResponseEntity<?> createBooking(@RequestBody BookingRequestDTO request) {
+        // No more try-catch needed! If processBooking throws an error, 
+        // the GlobalExceptionHandler will automatically intercept it.
+        Booking newBooking = bookingService.processBooking(request);
+        return new ResponseEntity<>(newBooking, HttpStatus.CREATED);
     }
 }

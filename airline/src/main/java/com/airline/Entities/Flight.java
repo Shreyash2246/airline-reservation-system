@@ -38,4 +38,10 @@ public class Flight {
     @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<FlightPricing> flightPricings;
+
+    @Column(name = "Total_Seats", nullable = false)
+    private Integer totalSeats;
+
+    @Column(name = "Available_Seats", nullable = false)
+    private Integer availableSeats;
 }
