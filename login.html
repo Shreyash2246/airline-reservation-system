@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Airline Login</title>
+</head>
+<nav style="background-color: #003366; padding: 15px; text-align: center; margin-bottom: 20px;">
+        <a href="search.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Search Flights</a>
+        <a href="cancel.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Cancel Ticket</a>
+        <a href="admin.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Admin Panel</a>
+        <a href="login.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Login / Register</a>
+</nav>
+<body style="font-family: Arial; text-align: center; padding-top: 50px;">
+    <div style="max-width: 300px; margin: auto; border: 1px solid #000; padding: 20px;">
+        <h2>USER LOGIN</h2>
+        <form onsubmit="event.preventDefault(); window.location.href = 'search.html';">
+            <div style="margin-bottom: 15px; text-align: left;">
+                <label>Username (Email)</label>
+                <input type="email" style="width: 90%; padding: 5px;" required>
+            </div>
+            <div style="margin-bottom: 15px; text-align: left;">
+                <label>Password</label>
+                <input type="password" style="width: 90%; padding: 5px;" required>
+            </div>
+            <button type="submit" style="width: 100%; padding: 10px; background: blue; color: white;">LOGIN</button>
+        </form>
+        <br>
+        <a href="register.html">SIGN UP</a> | <a href="#">Forget Password?</a>
+    </div>
+</body>
+
+</html>
