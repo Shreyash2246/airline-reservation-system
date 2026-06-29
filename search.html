@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airline Reservation - Flight Search</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .search-container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; }
+        .flight-card { border: 1px solid #333; padding: 15px; margin-top: 15px; }
+    </style>
+</head>
+
+<nav style="background-color: #003366; padding: 15px; text-align: center; margin-bottom: 20px;">
+        <a href="search.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Search Flights</a>
+        <a href="cancel.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Cancel Ticket</a>
+        <a href="admin.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Admin Panel</a>
+        <a href="login.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Login / Register</a>
+</nav>
+
+<body>
+
+    <div class="search-container">
+        <h2>Search Flights</h2>
+        
+        <form id="searchForm">
+            <div class="form-group">
+                <label>From (Source City):</label>
+                <input type="text" id="source" placeholder="e.g., Pune" required>
+            </div>
+            
+            <div class="form-group">
+                <label>To (Destination City):</label>
+                <input type="text" id="destination" placeholder="e.g., Bangalore" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Departure Date:</label>
+                <input type="date" id="travelDate" required>
+            </div>
+            
+            <button type="submit">Search</button>
+        </form>
+
+        <div id="resultsArea"></div>
+    </div>
+
+    <script>
+        // 1. Listen for the form submission
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevents the page from reloading
+            
+            // 2. Get the values the user typed in
+            const source = document.getElementById('source').value;
+            const dest = document.getElementById('destination').value;
+            const date = document.getElementById('travelDate').value;
+            
+            const resultsArea = document.getElementById('resultsArea');
+            resultsArea.innerHTML = "<p>Searching...</p>";
+
+            // 3. Make the HTTP request to your Spring Boot Backend using the built-in Fetch API
+            const url = `http://localhost:8080/api/flights/search?source=${source}&destination=${dest}&date=${date}`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("No flights found for this route and date.");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 4. Clear the "Searching..." text and build the HTML for the results
+                    resultsArea.innerHTML = ""; 
+                    
+                    data.forEach(flight => {
+                        const flightHTML = `
+                            <div class="flight-card">
+                                <h3>Flight: ${flight.flightNumber}</h3>
+                                <p><strong>Route:</strong> ${flight.sourceCity} to ${flight.destinationCity}</p>
+                                <p><strong>Departure:</strong> ${flight.departureTime}</p>
+                                <p><strong>Available Seats:</strong> ${flight.availableSeats}</p>
+                                <button onclick="selectFlight(${flight.flightId})">Select Flight</button>
+                            </div>
+                        `;
+                        resultsArea.innerHTML += flightHTML;
+                    });
+                })
+                .catch(error => {
+                    resultsArea.innerHTML = `<p style="color: red;">${error.message}</p>`;
+                });
+        });
+
+        // Simple function to handle button click
+        function selectFlight(flightId) {
+            // Save the ID so the next page knows what to book
+            localStorage.setItem("selectedFlightId", flightId);
+            
+            // Redirect the browser to the new booking page
+            window.location.href = "booking.html"; 
+        }
+    </script>
+</body>
+
+</html>
