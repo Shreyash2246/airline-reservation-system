@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airline Reservation - Book Flight</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { padding: 10px 20px; background-color: #28a745; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        #messageArea { margin-top: 20px; font-weight: bold; }
+        hr { margin: 20px 0; }
+    </style>
+</head>
+
+<nav style="background-color: #003366; padding: 15px; text-align: center; margin-bottom: 20px;">
+        <a href="search.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Search Flights</a>
+        <a href="cancel.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Cancel Ticket</a>
+        <a href="admin.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Admin Panel</a>
+        <a href="login.html" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Login / Register</a>
+</nav>
+
+<body>
+
+    <div class="container">
+        <h2>Complete Your Booking</h2>
+        <p id="flightDisplay" style="color: blue;">Loading flight details...</p>
+        
+        <form id="bookingForm">
+            <div class="form-group">
+                <label>Cabin Class:</label>
+                <select id="cabinClass">
+                    <option value="Economy">Economy</option>
+                    <option value="Business">Business</option>
+                </select>
+            </div>
+            
+            <hr>
+            
+            <h3>Passenger Details</h3>
+            <div class="form-group">
+                <label>Full Name:</label>
+                <input type="text" id="fullName" placeholder="e.g., Alex Dev" required>
+            </div>
+            <div class="form-group">
+                <label>Age:</label>
+                <input type="number" id="age" required>
+            </div>
+            <div class="form-group">
+                <label>Category:</label>
+                <select id="category">
+                    <option value="Adult">Adult</option>
+                    <option value="Child">Child</option>
+                    <option value="Infant">Infant</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Seat Number:</label>
+                <input type="text" id="seatNumber" placeholder="e.g., 12A" required>
+            </div>
+            
+            <hr>
+
+            <h3>Payment</h3>
+            <div class="form-group">
+                <label>Payment Method:</label>
+                <select id="paymentMethod">
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Debit Card">Debit Card</option>
+                </select>
+            </div>
+            
+            <button type="submit">Confirm & Pay</button>
+        </form>
+
+        <div id="messageArea"></div>
+    </div>
+
+    <script>
+        // 1. When the page loads, grab the Flight ID that was saved from the Search page
+        const selectedFlightId = localStorage.getItem("selectedFlightId");
+        
+        if (!selectedFlightId) {
+            document.getElementById('flightDisplay').innerText = "Error: No flight selected. Please go back and search again.";
+            document.getElementById('bookingForm').style.display = 'none';
+        } else {
+            document.getElementById('flightDisplay').innerText = "You are booking Flight ID: " + selectedFlightId;
+        }
+
+        // 2. Handle the Form Submission
+        document.getElementById('bookingForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = "<p>Processing booking...</p>";
+            messageArea.style.color = "black";
+
+            // 3. Build the exact JSON structure your Spring Boot DTO expects
+            const requestData = {
+                userId: 1, // Hardcoded to 1 for this test, normally comes from Login
+                flightId: parseInt(selectedFlightId),
+                cabinClass: document.getElementById('cabinClass').value,
+                paymentMethod: document.getElementById('paymentMethod').value,
+                passengers: [
+                    {
+                        fullName: document.getElementById('fullName').value,
+                        age: parseInt(document.getElementById('age').value),
+                        category: document.getElementById('category').value,
+                        seatNumber: document.getElementById('seatNumber').value
+                    }
+                ]
+            };
+
+            // 4. Make the POST request using fetch
+            fetch('http://localhost:8080/api/bookings/create', {
+                method: 'POST', // Critical: We are SENDING data, not getting it
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData) // Convert our JS object to a JSON string
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // If the backend sends a 400 Bad Request (like "Not enough seats")
+                    return response.json().then(errData => {
+                        throw new Error(errData.message || "Booking failed.");
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Success! data.pnrNumber is sent back from Spring Boot
+                messageArea.innerHTML = `
+                    <div style="text-align: center;">
+                        <h3 style="color: green;">✅ Booking Successful!</h3>
+                        <p>Your PNR is: <strong style="font-size: 1.2em;">${data.pnrNumber}</strong></p>
+                        <button onclick="window.location.href='search.html'" style="background-color: #007bff; margin-top: 10px;">Book Another Flight</button>
+                        <button onclick="window.location.href='cancel.html'" style="background-color: #dc3545; margin-top: 10px;">Cancel This Ticket</button>
+                    </div>
+                `;
+                document.getElementById('bookingForm').reset();
+            })
+            .catch(error => {
+                messageArea.innerHTML = `❌ Error: ${error.message}`;
+                messageArea.style.color = "red";
+            });
+        });
+    </script>
+</body>
+
+</html>
